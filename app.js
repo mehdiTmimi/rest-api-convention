@@ -3,6 +3,8 @@ const userRouter = require('./routes/users')
 const noteRouter=require('./routes/notes')
 const session = require('express-session')
 const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
+const User = require('./models/User')
 mongoose
 .connect
 ('mongodb+srv://mehditmimi:d24KWFsKwn0ypVO4@cluster0.opkalrs.mongodb.net/?retryWrites=true&w=majority').
@@ -29,16 +31,25 @@ app.get('/',(req,res)=>{
         req.session.views++;
     res.send(`hello , it works ${req.session.views}`)
 })
-app.post('/login',(req,res)=>{
-    const {login,pwd}=req.body
+app.post('/login',async (req,res)=>{
+   
+   try{
+     const {login,pwd}=req.body
     console.log(req.body)
-    if(login=="admin" && pwd=="123")
+    const user =await User.findOne({login:login})
+    //console.log(user.login,pwd)
+    if(user && await bcrypt.compare(pwd,user.pwd))
     {
         req.session.isConnected=true;
         res.status(200).send('success')
     }
     else
         res.status(401).send('echec, login or pwd incorrect')
+
+   }catch(e)
+   {
+    res.status(500).send(e.message)
+   }
 })
 app.post('/logout',(req,res)=>{
     req.session.destroy();
