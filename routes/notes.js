@@ -1,24 +1,41 @@
-const express=require('express')
-let notes=[
-    {
-        id:1,
-        value:20,
-        idUser:1
-    },
-    {
-        id:2,
-        value:15,
-        idUser:1
-    },
-    {
-        id:3,
-        value:19,
-        idUser:2
-    }
-]
+const express=require('express');
+const Note = require('../models/Note');
+
 
 const router = express.Router();
-router.get('/',(req,res)=>{
+router.get('/',async (req,res)=>{
+    const notes=await Note.find()
     res.json(notes)
 })
+
+router.post('/',async (req,res)=>{
+    const {value,idUser}=req.body;
+    const note = new Note({
+        value:value,
+        idUser:idUser
+    })
+    note.save().then(()=>{
+        res.status(201).json({msg:'success'})
+    }).catch(err=>res.status(500).json({err:err.message}))
+})
+
+router.put('/:idNote',async (req,res)=>{
+    const idNote=req.params.idNote
+    const {value,idUser}=req.body;
+    const note = await Note.findById(idNote);
+   note.value=value
+   note.idUser=idUser
+   note.save().then(()=>{
+    res.json({msg:'updated successfuly'})
+   }).catch(err=>res.status(500).json({err:err.message}))
+})
+
+router.delete('/:idNote',async (req,res)=>{
+    const idNote=req.params.idNote
+    Note.findByIdAndDelete(idNote).then(()=>{
+        res.json({msg:'removed successfuly'})
+       }).catch(err=>res.status(500).json({err:err.message}))
+ 
+})
+
 module.exports=router

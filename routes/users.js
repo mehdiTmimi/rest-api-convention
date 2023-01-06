@@ -1,28 +1,11 @@
-const express=require('express')
+const express=require('express');
+const User = require('../models/User');
+const bcrypt=require('bcrypt')
 
-let users=[{
-    id:1,
-    nom:'hamza'
-}
-,
-{
-    id:2,
-    nom:'filali'
-}
-,
-{
-    id:3,
-    nom:'ali'
-}
-,
-{
-    id:4,
-    nom:'Sarah'
-}
-]
 
 const router = express.Router();
-router.get('/',(req,res)=>{
+router.get('/',async (req,res)=>{
+    const users = await User.find()
     let limit=req.query.limit || users.length;
     let dataToSend=users.filter((element, index) =>{
         return index<limit;
@@ -30,25 +13,24 @@ router.get('/',(req,res)=>{
     res.json(dataToSend); // .json est la plus adequate 
 })
 
-router.get('/:id',(req,res)=>{
+router.get('/:id',async (req,res)=>{
    let id= req.params.id
-   let user = users.find(element=>element.id==id)
+   let user = await User.findById(id)
    if(user)
         res.status(200).json(user);
     else
         res.status(404).send("introuvable")
 })
 
-router.post('/',(req,res)=>{
-   let newUser= req.body;// dont forget to add the middleware on top app.use(express.json())
-   let user=users.find(element=>element.id==newUser.id)
-   if(!user)
-   {
-   users.push(newUser);
-   res.status(201).json(newUser);
-    }
-    else
-        res.status(404).send("id already exist")
+router.post('/',async (req,res)=>{
+    const {login,pwd}=req.body;
+    const user = new User({
+        login:login,
+        pwd:await bcrypt.hash(pwd,10)
+    })
+    user.save().then(()=>{
+        res.status(201).json({msg:'success'})
+    }).catch(err=>res.status(500).json({err:err.message}))
 })
 
 router.delete('/:id',(req,res)=>{

@@ -2,6 +2,13 @@ const express = require('express')
 const userRouter = require('./routes/users')
 const noteRouter=require('./routes/notes')
 const session = require('express-session')
+const mongoose = require('mongoose')
+mongoose
+.connect
+('mongodb+srv://mehditmimi:d24KWFsKwn0ypVO4@cluster0.opkalrs.mongodb.net/?retryWrites=true&w=majority').
+then(()=>console.log("connected to mongodb atlas"))
+.catch(err=>console.log(err=>err.message))
+
 //const bodyParser = require('body-parser');
 const app=express(); // app is a convention
 //app.use(bodyParser.urlencoded({ extended: false }));// middleware pour lire query paramss
